@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudySync</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script>
+    (() => {
+      if (location.protocol !== 'https:') {
+        const secure = `https://${location.host}${location.pathname}${location.search}${location.hash}`;
+        location.replace(secure);
+        return;
+      }
+      try {
+        const mode = localStorage.getItem('studysync_mode');
+        const theme = localStorage.getItem('studysync_theme');
+        if (mode) document.documentElement.dataset.mode = mode;
+        if (theme) document.documentElement.dataset.theme = theme;
+      } catch {}
+    })();
+  </script>
+  <link rel="stylesheet" href="/css/base.css" />
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="loadScreen">
+  <div class="load-icon">🚀</div>
+  <div class="load-title">StudySync</div>
+  <div class="load-sub">Loading your workspace…</div>
+  <div class="load-bar"><div class="load-bar-fill" id="loadFill"></div></div>
+</div>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🚀</div>
+    <div>
+      <div class="logo-text">StudySync</div>
+      <div class="logo-sub">Digital Concierge</div>
+    </div>
+  </div>
+  <div class="sidebar-top-btns">
+    <button class="btn-new-group" onclick="openNewGroupModal()">+ New Group</button>
+  </div>
+  <div class="search-wrap">
+    <input class="search-box" placeholder="Search groups…" oninput="filterGroups(this.value)" />
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-item active" onclick="switchView('messages',this)">
+      <span class="nav-icon">💬</span>Messages
+    </div>
+    <div class="nav-item" onclick="switchView('schedule',this)">
+      <span class="nav-icon">📅</span>Schedule
+    </div>
+  </div>
+  <div class="sidebar-section">Active Groups</div>
+  <div class="group-list" id="groupList"></div>
+  <div class="sidebar-bottom">
+    <div class="nav-item-sm" onclick="openSettingsModal()"><span class="nav-icon">⚙️</span>Settings</div>
+    <div class="nav-item-sm" onclick="openHelpModal()"><span class="nav-icon">❓</span>Help</div>
+    <div class="user-chip" id="userChip" onclick="toggleUserMenu(event)">
+      <div class="user-avatar-area">
+        <div class="avatar" id="myAvatar" style="background:var(--primary)">A</div>
+      </div>
+      <div>
+        <div class="user-chip-name" id="myName">Alex Rivera</div>
+        <div class="user-chip-plan">Pro Plan</div>
+      </div>
+      <div class="user-menu" id="userMenu" aria-hidden="true">
+        <div class="user-menu-title" id="userMenuName">User</div>
+        <div class="user-menu-sub" id="userMenuUsername">@username</div>
+        <div class="user-menu-sep"></div>
+        <button class="user-menu-btn" type="button" onclick="openUserProfile(); closeUserMenu();">👤 Profile</button>
+        <div class="user-menu-sep"></div>
+        <button class="user-menu-btn" type="button" onclick="logout()">🚪 Log out</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- MESSAGES VIEW -->
+  <div class="view messages-view active" id="view-messages">
+    <div class="chat-header">
+      <div class="chat-header-left">
+        <div class="chat-group-dot" id="chatDot" style="background:var(--primary)"></div>
+        <div class="chat-group-name" id="chatName">Select a group</div>
+        <div class="chat-member-count" id="chatMeta"></div>
+      </div>
+      <div class="chat-header-right">
+        <button class="sync-badge" id="syncBadgeBtn" onclick="openNewMeetingModal()">📅 Schedule Sync</button>
+        <div class="header-avatars" id="headerAvatars" onclick="openGroupMembersModal()"></div>
+        <div class="icon-badge-wrap" title="Announcements">
+          <button class="icon-btn-hdr" id="annBtn" type="button" onclick="openAnnouncementsModal()" aria-label="Announcements">🔔</button>
+          <span class="notif-badge" id="annBadge" aria-hidden="true"></span>
+        </div>
+        <button class="icon-btn-hdr" onclick="openChatDropdown(event)">⋮</button>
+      </div>
+    </div>
+    <div class="chat-body" id="chatBody">
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text3);gap:10px;">
+        <span style="font-size:38px">💬</span>
+        <span style="font-size:14px;font-weight:500;">Select a group to start chatting</span>
+      </div>
+    </div>
+    <div class="chat-footer">
+      <div class="chat-input-wrap">
+        <input class="chat-input" id="msgInput" placeholder="Type message…" onkeydown="msgKeyDown(event)" />
+        <button class="icon-btn" id="emojiBtn" type="button" onclick="toggleEmojiPicker(event)" aria-label="Emoji">😊</button>
+        <button class="icon-btn" id="attachBtn" type="button" onclick="triggerFilePicker()" aria-label="Attach files">📎</button>
+      </div>
+      <button class="send-btn" onclick="sendMsg()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+	    </div>
+	    <input id="chatFileInput" type="file" multiple style="display:none;" />
+	    <div class="emoji-popover" id="emojiPopover" aria-hidden="true"></div>
+	    <div class="preview-panel" id="previewPanel" aria-hidden="true">
+	      <div class="preview-head">
+	        <div class="preview-title" id="previewTitle">Preview</div>
+	        <div class="preview-actions">
+	          <button class="preview-link" id="previewDownloadBtn" type="button" onclick="downloadCurrentPreview()">Download</button>
+	          <button class="preview-close" type="button" onclick="closeAttachmentPreview()" aria-label="Close preview">✕</button>
+	        </div>
+	      </div>
+	      <div class="preview-body" id="previewBody"></div>
+	    </div>
+	  </div>
+
+  <!-- SCHEDULE VIEW -->
+  <div class="view schedule-view" id="view-schedule">
+    <div class="schedule-main">
+      <div class="schedule-header">
+        <div class="cal-nav">
+          <button class="cal-nav-btn" onclick="calPrev()">‹</button>
+          <span class="cal-month-label" id="calMonthLabel">OCT 2023</span>
+          <button class="cal-nav-btn" onclick="calNext()">›</button>
+        </div>
+        <div class="cal-header-right">
+          <button class="icon-btn-hdr">🔔</button>
+          <button class="icon-btn-hdr" onclick="openScheduleDropdown(event)">⋮</button>
+          <div class="avatar" id="calAvatar" style="background:var(--primary);width:32px;height:32px;font-size:12px;">A</div>
+        </div>
+      </div>
+      <div class="calendar-grid" id="calGrid"></div>
+      <div class="cal-bottom-bar">
+        <span style="font-size:18px">📋</span>
+        <input class="ical-input" id="icalPaste" placeholder="Paste Allocate iCal link here…" />
+        <button class="btn-sync-cal" onclick="syncFromPaste()">⟳ Sync Schedule</button>
+        <button class="btn-past-votes" onclick="showToast('No past votes yet')">🗳 View Past Votes</button>
+      </div>
+    </div>
+
+    <div class="schedule-sidebar">
+      <!-- Allocate Section -->
+      <div class="ssb-section" id="allocPanel">
+        <div class="ssb-title">🔗 Allocate Calendar</div>
+        <div style="font-size:12px;color:var(--text3);line-height:1.5;margin-bottom:8px;">Sync your university timetable to auto-block class times during meeting polls.</div>
+        <div class="allocate-row">
+          <input class="allocate-inp" id="allocateUrlInput" placeholder="webcal://… URL or paste raw .ics content" />
+          <button class="btn-alloc-sync" onclick="syncAllocate()">Sync</button>
+        </div>
+        <div class="alloc-status" id="allocStatus"></div>
+      </div>
+
+      <!-- Quick Scheduler -->
+      <div class="ssb-section">
+        <div class="ssb-title">Quick Scheduler</div>
+        <div style="font-size:10.5px;color:var(--text3);font-weight:600;letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px;">TIMING OPTIONS</div>
+        <div class="timing-grid">
+          <button class="timing-btn" onclick="this.classList.toggle('sel')">Morning</button>
+          <button class="timing-btn" onclick="this.classList.toggle('sel')">Lunch</button>
+          <button class="timing-btn" onclick="this.classList.toggle('sel')">Afternoon</button>
+          <button class="timing-btn" onclick="this.classList.toggle('sel')">Late</button>
+        </div>
+        <button class="btn-create-poll" onclick="openNewMeetingModal()">✦ Create Poll</button>
+      </div>
+
+      <!-- Voting Section -->
+      <div class="ssb-section">
+        <div class="ssb-title">
+          Voting
+          <span class="ssb-badge" id="pendingBadge">0 PENDING</span>
+        </div>
+        <div id="votingList"><div style="font-size:12.5px;color:var(--text3);text-align:center;padding:16px 0;">No polls yet</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL: New Group -->
+<div class="modal-overlay" id="modalNewGroup">
+  <div class="modal">
+    <div class="modal-title">Create New Group</div>
+    <div class="form-group">
+      <label class="form-label">GROUP NAME</label>
+      <input class="form-input" id="ngName" placeholder="e.g. Design Sprint Team" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">COLOUR</label>
+      <div class="color-swatches" id="ngSwatches">
+        <div class="cswatch sel" style="background:#4361ee" data-c="#4361ee" onclick="pickColor(this)"></div>
+        <div class="cswatch" style="background:#7b2ff7" data-c="#7b2ff7" onclick="pickColor(this)"></div>
+        <div class="cswatch" style="background:#f72585" data-c="#f72585" onclick="pickColor(this)"></div>
+        <div class="cswatch" style="background:#06d6a0" data-c="#06d6a0" onclick="pickColor(this)"></div>
+        <div class="cswatch" style="background:#fb8500" data-c="#fb8500" onclick="pickColor(this)"></div>
+        <div class="cswatch" style="background:#ef233c" data-c="#ef233c" onclick="pickColor(this)"></div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">DESCRIPTION</label>
+      <textarea class="form-input" id="ngDescription" rows="3" placeholder="What is this group for? (optional)" style="resize:vertical;min-height:72px;"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">ADD MEMBERS</label>
+      <div id="ngMembers"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modalNewGroup')">Cancel</button>
+      <button class="btn-primary" onclick="createGroup()">Create Group</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: New Meeting -->
+<div class="modal-overlay" id="modalNewMeeting">
+  <div class="modal">
+    <div class="modal-title">📅 Create Meeting Poll</div>
+    <div class="form-group">
+      <label class="form-label">MEETING TITLE</label>
+      <input class="form-input" id="mtgTitle" placeholder="e.g. Weekly Design Sync" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">DESCRIPTION</label>
+      <input class="form-input" id="mtgDesc" placeholder="Optional description" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">GROUP</label>
+      <select class="form-select" id="mtgGroupSel"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">PROPOSED TIME SLOTS</label>
+      <div id="slotContainer"></div>
+      <button class="btn-add-slot" onclick="addSlot()">+ Add Another Slot</button>
+    </div>
+    <div class="blocked-warn" id="blockedWarn">⚠️ Some slots conflict with your Allocate timetable and will be marked as unavailable for you.</div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modalNewMeeting')">Cancel</button>
+      <button class="btn-primary" onclick="createMeeting()">Create Poll</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Announcements -->
+<div class="modal-overlay" id="modalAnnouncements">
+  <div class="modal">
+    <div class="ann-modal-head">
+      <div class="modal-title" style="margin-bottom:0;">Announcements</div>
+      <button class="ann-link" id="annMarkAllBtn" type="button" onclick="markAllAnnouncementsRead()">Mark all as read</button>
+    </div>
+
+    <div class="ann-compose-top">
+      <div class="ann-compose-title" id="annComposeTitle">New announcement</div>
+      <button class="ann-link" id="annCancelEditBtn" type="button" onclick="cancelAnnouncementEdit()" style="display:none;">Cancel edit</button>
+    </div>
+    <textarea class="form-input ann-textarea" id="annContent" rows="3" placeholder="Write an announcement for this group…"></textarea>
+    <div class="ann-compose-actions">
+      <button class="btn-primary" id="annPublishBtn" type="button" onclick="publishAnnouncement()">Publish</button>
+    </div>
+
+    <div style="height:16px;"></div>
+    <div class="ann-list" id="annList"></div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" type="button" onclick="closeModal('modalAnnouncements')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: User Profile -->
+<div class="modal-overlay" id="modalUserProfile">
+  <div class="modal">
+    <div class="modal-title">👤 User Profile</div>
+    <div class="profile-content">
+      <div class="profile-header">
+        <div class="profile-avatar" id="profileAvatar" style="background:var(--primary);width:60px;height:60px;font-size:24px;">A</div>
+        <div class="profile-info">
+          <div class="profile-name" id="profileName">Alex Rivera</div>
+          <div class="profile-username" id="profileUsername">@username</div>
+          <div class="profile-plan">Pro Plan</div>
+        </div>
+      </div>
+      <div class="profile-stats">
+        <div class="stat-item">
+          <div class="stat-number" id="groupCount">0</div>
+          <div class="stat-label">Groups</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" id="messageCount">0</div>
+          <div class="stat-label">Messages</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" id="meetingCount">0</div>
+          <div class="stat-label">Meetings</div>
+        </div>
+      </div>
+      <div class="profile-section">
+        <div class="section-title">Account Information</div>
+        <div class="info-row">
+          <span class="info-label">Email:</span>
+          <span class="info-value" id="profileEmail">Not available</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Member Since:</span>
+          <span class="info-value" id="profileJoinDate">Not available</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Status:</span>
+          <span class="info-value status-online">🟢 Online</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modalUserProfile')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Group Information -->
+<div class="modal-overlay" id="modalGroupInformation">
+  <div class="modal">
+    <div class="modal-title" id="groupInfoTitle">Group Information</div>
+    <div id="groupInfoBody">
+      <div style="text-align:center;color:var(--text3);padding:20px;">Loading…</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modalGroupInformation')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Group Members -->
+<div class="modal-overlay" id="modalGroupMembers">
+  <div class="modal">
+    <div class="modal-title">Group Members</div>
+    <div class="members-list" id="membersList">
+      <div style="text-align:center;color:var(--text3);padding:20px;">Loading members...</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modalGroupMembers')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Daily Schedule -->
+<div class="modal-overlay" id="modalDailySchedule">
+  <div class="modal modal-large">
+    <div class="modal-title">
+      <span id="dailyScheduleDate">Daily Schedule</span>
+    </div>
+    <div class="daily-schedule-content">
+      <div class="schedule-table-container">
+        <table class="daily-schedule-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Event</th>
+              <th>Location</th>
+              <th>Source</th>
+            </tr>
+          </thead>
+          <tbody id="dailyScheduleBody">
+            <tr>
+              <td colspan="4" class="no-events">Loading events...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modalDailySchedule')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- MODAL: Settings -->
+<div class="modal-overlay" id="modalSettings">
+  <div class="modal">
+    <div class="modal-title">Settings</div>
+
+    <div class="form-group">
+      <label class="form-label">APPEARANCE</label>
+      <div class="st-row">
+        <div class="st-row-left">
+          <div class="st-row-title">Dark mode</div>
+          <div class="st-row-sub">Switch between light and dark UI.</div>
+        </div>
+        <label class="st-toggle">
+          <input id="stDarkToggle" type="checkbox" />
+          <span class="st-toggle-slider"></span>
+        </label>
+      </div>
+      <div style="height:14px;"></div>
+      <div class="st-row-title" style="margin-bottom:10px;">Theme</div>
+      <div class="theme-grid" id="themeGrid">
+        <button class="theme-chip" type="button" data-theme="blue"><span class="theme-dot theme-blue"></span>Blue</button>
+        <button class="theme-chip" type="button" data-theme="violet"><span class="theme-dot theme-violet"></span>Violet</button>
+        <button class="theme-chip" type="button" data-theme="pink"><span class="theme-dot theme-pink"></span>Pink</button>
+        <button class="theme-chip" type="button" data-theme="teal"><span class="theme-dot theme-teal"></span>Teal</button>
+        <button class="theme-chip" type="button" data-theme="orange"><span class="theme-dot theme-orange"></span>Orange</button>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modalSettings')">Close</button>
+      <button class="btn-primary" onclick="logout()">Log out</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Help -->
+<div class="modal-overlay" id="modalHelp">
+  <div class="modal">
+    <div class="modal-title">Help</div>
+
+    <div class="help-grid">
+      <div class="help-card">
+        <div class="help-card-title">Quick actions</div>
+        <div class="help-actions">
+          <button class="help-btn" type="button" onclick="closeModal('modalHelp');switchView('messages',document.querySelectorAll('.sidebar-nav .nav-item')[0]);">Open Messages</button>
+          <button class="help-btn" type="button" onclick="closeModal('modalHelp');switchView('schedule',document.querySelectorAll('.sidebar-nav .nav-item')[1]);">Open Schedule</button>
+          <button class="help-btn" type="button" onclick="reloadApp()">Reload App</button>
+          <button class="help-btn" type="button" onclick="resetTheme()">Reset Theme</button>
+        </div>
+      </div>
+
+      <div class="help-card">
+        <div class="help-card-title">Getting started</div>
+        <ul class="help-list">
+          <li>Create a group via <span class="mono-inline">+ New Group</span>.</li>
+          <li>Select a group to open its chat.</li>
+          <li>Send a message with <span class="mono-inline">Enter</span> (or click the send button).</li>
+          <li>Create a meeting poll from <span class="mono-inline">Schedule Sync</span> or <span class="mono-inline">✦ Create Poll</span>.</li>
+        </ul>
+      </div>
+
+      <div class="help-card">
+        <div class="help-card-title">Allocate calendar</div>
+        <ul class="help-list">
+          <li>Paste your <span class="mono-inline">webcal://</span> iCal URL into <span class="mono-inline">Allocate Calendar</span> and click <span class="mono-inline">Sync</span>.</li>
+          <li>If the URL cannot be fetched, open the <span class="mono-inline">.ics</span> link and paste the raw text instead.</li>
+          <li>Class events will auto-block conflicting poll slots.</li>
+        </ul>
+      </div>
+
+      <div class="help-card">
+        <div class="help-card-title">Themes</div>
+        <ul class="help-list">
+          <li>Toggle <span class="mono-inline">Dark mode</span> in Settings.</li>
+          <li>Pick a theme color; each theme adapts to light and dark modes.</li>
+        </ul>
+      </div>
+
+      <div class="help-card help-wide">
+        <div class="help-card-title">Troubleshooting</div>
+        <ul class="help-list">
+          <li><span class="mono-inline">Unauthorized</span>: your session expired. Log in again.</li>
+          <li>Meeting poll shows <span class="mono-inline">Forbidden</span>: you are not a member of that group.</li>
+          <li>Schedule not updating: reload the app and sync again.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modalHelp')">Close</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/js/app.js"></script>
+</body>
+</html>

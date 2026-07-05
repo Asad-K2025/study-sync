@@ -1,0 +1,71 @@
+body { overflow: auto; }
+
+.auth-shell { width: 100%; padding: 24px; display: flex; justify-content: center; }
+.auth-card {
+  width: 440px;
+  max-width: 92vw;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: var(--shadow-lg);
+}
+.auth-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.auth-logo { width: 44px; height: 44px; border-radius: 14px; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: var(--shadow); }
+.auth-title { font-size: 18px; font-weight: 800; }
+.auth-sub { font-size: 12.5px; color: var(--text3); margin-top: 2px; }
+.auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0 18px; }
+.auth-tab {
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--text2);
+  font-family: var(--font);
+}
+.auth-tab.active { background: var(--primary-soft); color: var(--primary); border-color: var(--primary); }
+.auth-form { display: flex; flex-direction: column; gap: 8px; }
+.auth-label { font-size: 11.5px; font-weight: 700; letter-spacing: .03em; color: var(--text2); margin-top: 6px; }
+.auth-input {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  font-family: var(--font);
+  outline: none;
+  background: var(--surface);
+}
+.auth-input:focus { border-color: var(--primary); }
+.auth-btn {
+  margin-top: 10px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: var(--font);
+}
+.auth-btn:hover { background: var(--primary-dark); }
+.auth-hint { margin-top: 14px; font-size: 12px; color: var(--text3); line-height: 1.5; }
+.auth-hint .mono { font-family: var(--mono); font-weight: 600; color: var(--text2); }
+.auth-hint .sep { margin: 0 8px; }
+.auth-error { margin-top: 12px; min-height: 18px; font-size: 12.5px; font-weight: 600; color: var(--pink); }
+.auth-link-btn {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font);
+  padding: 0;
+}
+.auth-link-btn:hover { text-decoration: underline; color: var(--primary-dark); }
+

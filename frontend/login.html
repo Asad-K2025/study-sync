@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudySync | Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script>
+    (() => {
+      if (location.protocol !== 'https:') {
+        const secure = `https://${location.host}${location.pathname}${location.search}${location.hash}`;
+        location.replace(secure);
+        return;
+      }
+      try {
+        const mode = localStorage.getItem('studysync_mode');
+        const theme = localStorage.getItem('studysync_theme');
+        if (mode) document.documentElement.dataset.mode = mode;
+        if (theme) document.documentElement.dataset.theme = theme;
+      } catch {}
+    })();
+  </script>
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/auth.css" />
+</head>
+<body style="align-items:center;justify-content:center;">
+  <div class="auth-shell">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="auth-logo">🚀</div>
+        <div>
+          <div class="auth-title">StudySync</div>
+          <div class="auth-sub">Sign in to your workspace</div>
+        </div>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" type="button">Log in</button>
+        <button class="auth-tab" id="tabRegister" type="button">Create account</button>
+      </div>
+
+      <div class="auth-form" id="loginForm">
+        <label class="auth-label" for="loginUsername">Username</label>
+        <input class="auth-input" id="loginUsername" autocomplete="username" placeholder="e.g. alex" />
+        <label class="auth-label" for="loginPassword">Password</label>
+        <input class="auth-input" id="loginPassword" type="password" autocomplete="current-password" placeholder="Your password" />
+        <button class="auth-btn" id="btnLogin" type="button">Log in</button>
+        <div class="auth-forgot" style="text-align:right;margin-top:8px;">
+          <button class="auth-link-btn" id="btnForgotPassword" type="button">Forgot password?</button>
+        </div>
+        <div class="auth-hint" style="margin-top:14px;">
+          <div>Demo users: <span class="mono">alex</span>, <span class="mono">jordan</span>, <span class="mono">sarah</span>, <span class="mono">marcus</span></div>
+          <div style="margin-top:4px;">Password: <span class="mono">StudySync!1</span></div>
+        </div>
+      </div>
+
+      <div class="auth-form" id="registerForm" style="display:none;">
+        <label class="auth-label" for="regName">Name</label>
+        <input class="auth-input" id="regName" autocomplete="name" placeholder="Your display name" />
+        <label class="auth-label" for="regUsername">Username</label>
+        <input class="auth-input" id="regUsername" autocomplete="username" placeholder="3-24 characters, letters/numbers/_" />
+        <label class="auth-label" for="regEmail">Email</label>
+        <input class="auth-input" id="regEmail" type="email" autocomplete="email" placeholder="your@email.com" />
+        <label class="auth-label" for="regPassword">Password</label>
+        <input class="auth-input" id="regPassword" type="password" autocomplete="new-password" placeholder="At least 8 characters with uppercase, lowercase, and special character" />
+        <button class="auth-btn" id="btnRegister" type="button">Create account</button>
+        <div class="auth-hint" style="margin-top:14px;">
+          <div>Demo users: <span class="mono">alex</span>, <span class="mono">jordan</span>, <span class="mono">sarah</span>, <span class="mono">marcus</span></div>
+          <div style="margin-top:4px;">Password: <span class="mono">StudySync!1</span></div>
+        </div>
+      </div>
+
+      <div class="auth-form" id="forgotForm" style="display:none;">
+        <label class="auth-label" for="forgotEmail">Email</label>
+        <input class="auth-input" id="forgotEmail" type="email" autocomplete="email" placeholder="your@email.com" />
+        <button class="auth-btn" id="btnForgotSubmit" type="button">Send code</button>
+        <div style="text-align:left;margin-top:8px;">
+          <button class="auth-link-btn" id="btnBackToLogin1" type="button">← Back to login</button>
+        </div>
+      </div>
+
+      <div class="auth-form" id="resetForm" style="display:none;">
+        <label class="auth-label" for="resetCode">Verification Code</label>
+        <input class="auth-input" id="resetCode" type="text" autocomplete="one-time-code" placeholder="Enter the 6-digit code sent to your email" maxlength="6" />
+        <label class="auth-label" for="resetPassword">New Password</label>
+        <input class="auth-input" id="resetPassword" type="password" autocomplete="new-password" placeholder="At least 8 characters with uppercase, lowercase, and special character" />
+        <button class="auth-btn" id="btnResetSubmit" type="button">Reset password</button>
+        <div style="text-align:left;margin-top:8px;">
+          <button class="auth-link-btn" id="btnBackToLogin2" type="button">← Back to login</button>
+        </div>
+      </div>
+
+      <div class="auth-error" id="authError" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <script type="module" src="/js/login.js"></script>
+</body>
+</html>
